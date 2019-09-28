@@ -1,10 +1,10 @@
 # tor-multiple-instances
 
-Lets you run multiple tor instances on one node. This allows you to run multiple relay in the same server as Tor is not multithreaded.
+Lets you run multiple tor instances on one node. This allows you to run multiple relays on the same server as Tor is not multithreaded.
 
-By setting multiple configurations files, you can run multiple tor instances on the same node.
+Just by setting multiple configuration files, you can run multiple tor instances on the same node.
 
-Need official source but it looks like Tor doesn't allow more than two instances per public IP.
+This needs official source but it looks like Tor doesn't allow more than two instances per public IP.
 
 ***
 
