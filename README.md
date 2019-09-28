@@ -11,6 +11,10 @@ This needs official source but it looks like Tor doesn't allow more than two ins
 ## How To:
 
 ### Patch init.d tor script to make it support multiple instances:
+* Replace `/etc/init.d/tor` with the `tor` file from this repo
+
+Or
+
 * Patch the init.d tor script: `sudo patch /etc/init.d/tor tor.patch`
 
 ### Preprare Original Instance (not mandatory be easier to track everythin later):
