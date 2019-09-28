@@ -1,0 +1,192 @@
+--- /etc/init.d/tor	2019-09-28 19:17:54.324841476 +0200
++++ tor	2019-09-28 18:58:34.299415401 +0200
+@@ -128,11 +128,10 @@
+ }
+ 
+ 
+-case "$1" in
+-  start)
++startit () {
+ 	if [ "$RUN_DAEMON" != "yes" ]; then
+ 		log_action_msg "Not starting $DESC (Disabled in $DEFAULTSFILE)."
+-		exit 0
++		return 0
+ 	fi
+ 
+ 	if [ -n "$MAX_FILEDESCRIPTORS" ]; then
+@@ -177,27 +176,29 @@
+ 			exit 1
+ 		fi
+ 	fi
+-	;;
+-  stop)
++}
++
++stopit () {
+ 	log_action_begin_msg "Stopping $DESC"
+ 	pid=`cat $TORPID 2>/dev/null` || true
+ 
+ 	if test ! -f $TORPID -o -z "$pid"; then
+ 		log_action_end_msg 0 "not running - there is no $TORPID"
+-		exit 0
++		return 0
+ 	fi
+ 
+ 	if start-stop-daemon --stop --signal INT --quiet --pidfile $TORPID --exec $DAEMON; then
+ 		wait_for_deaddaemon $pid
+ 	elif kill -0 $pid 2>/dev/null; then
+ 		log_action_end_msg 1 "Is $pid not $NAME?  Is $DAEMON a different binary now?"
+-		exit 1
++		return 1
+ 	else
+ 		log_action_end_msg 1 "$DAEMON died: process $pid not running; or permission denied"
+-		exit 1
++		return 1
+ 	fi
+-	;;
+-  reload|force-reload)
++}
++
++reloadit () {
+ 	check_config
+ 
+ 	log_action_begin_msg "Reloading $DESC configuration"
+@@ -205,7 +206,7 @@
+ 
+ 	if test ! -f $TORPID -o -z "$pid"; then
+ 		log_action_end_msg 1 "not running - there is no $TORPID"
+-		exit 1
++		return 1
+ 	fi
+ 
+ 	if start-stop-daemon --stop --signal 1 --quiet --pidfile $TORPID --exec $DAEMON
+@@ -213,36 +214,113 @@
+ 		log_action_end_msg 0
+ 	elif kill -0 $pid 2>/dev/null; then
+ 		log_action_end_msg 1 "Is $pid not $NAME?  Is $DAEMON a different binary now?"
+-		exit 1
++		return 1
+ 	else
+ 		log_action_end_msg 1 "$DAEMON died: process $pid not running; or permission denied"
+-		exit 1
++		return 1
+ 	fi
+-	;;
+-  restart)
++}
++
++restartit () {
+ 	check_config
+ 
+ 	$0 stop
+ 	sleep 1
+ 	$0 start
+-	;;
+-  status)
++}
++
++statusit () {
+ 	if test ! -r $(dirname $TORPID); then
+ 		log_failure_msg "cannot read PID file $TORPID"
+-		exit 4
++		return 4
+ 	fi
+ 	pid=`cat $TORPID 2>/dev/null` || true
+ 	if test ! -f $TORPID -o -z "$pid"; then
+ 		log_failure_msg "$NAME is not running"
+-		exit 3
++		return 3
+ 	fi
+ 	if start-stop-daemon --pid "$pid" -T ; then
+ 		log_success_msg "$NAME is running"
+-		exit 0
++		return 0
+ 	else
+ 		log_failure_msg "$NAME is not running"
+-		exit 1
++		return 1
+ 	fi
++	return 0
++}
++setenv() {
++    id=$1
++    DESC="tor daemon ${id}"
++    TORPID="${TORPIDDIR}/tor.${id}.pid"
++    ARGS="-f /etc/tor/torrc.${id}"
++}
++
++runcmd() {
++    cmd=$1
++    count=$2
++    if [ -z $count ]; then
++	log_failure_msg "Instance not set"
++	return 1
++    fi
++    setenv $count
++    $cmd
++    return $?
++}
++
++runcmds() {
++    cmd=$1
++    ret=0
++    for c in /etc/tor/torrc.?
++    do
++	count=${c##*/}
++	count=`echo $count | cut -d '.' -f2`
++	runcmd $cmd $count
++	ret+=$?
++    done
++    return $ret
++}
++
++ret=0
++case "$1" in
++    start)
++	runcmds startit
++	ret=$?
++	;;
++    stop)
++	runcmds stopit
++	ret=$?
++	;;
++    reload)
++	runcmds reloadit
++	ret=$?
++	;;
++    restart)
++	runcmds restartit
++	ret=$?
++	;;
++    status)
++	runcmds statusit
++	ret=$?
++	;;
++    startit)
++	runcmd startit $2
++	ret=$?
++	;;
++    stopit)
++	runcmd stopit $2
++	ret=$?
++	;;
++    reloadit)
++	runcmd reloadit $2
++	ret=$?
++	;;
++    restartit)
++	runcmd restartit $2
++	ret=$?
++	;;
++    statusit)
++	runcmd statusit $2
++	ret=$?
+ 	;;
+   *)
+ 	log_action_msg "Usage: $0 {start|stop|restart|reload|force-reload|status}" >&2
+@@ -250,4 +328,4 @@
+ 	;;
+ esac
+ 
+-exit 0
++exit $ret
