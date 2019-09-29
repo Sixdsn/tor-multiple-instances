@@ -11,7 +11,7 @@ This needs official source but it looks like Tor doesn't allow more than two ins
 ## How To:
 
 ### Patch init.d tor script to make it support multiple instances:
-* Replace `/etc/init.d/tor` with the `tor` file from this repo
+* Replace `/etc/init.d/tor` with the [Tor init.d script](tor) file from this repo
 
 Or
 
@@ -40,7 +40,7 @@ Log notice file /var/log/tor/noticesX.log
 
 ***
 
-You can look at very minimalistic config files in `torrc.1` and `torrc.2`
+You can look at very minimalistic config files in [Instance 1 torrc](torrc.1) and [Instance 2 torrc](torrc.2)
 
 Here are the main differences in my relay configurations on the same node:
 
