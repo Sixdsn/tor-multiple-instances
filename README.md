@@ -4,7 +4,11 @@ Lets you run multiple tor instances on one node. This allows you to run multiple
 
 Just by setting multiple configuration files, you can run multiple tor instances on the same node.
 
-This needs official source but it looks like Tor doesn't allow more than two instances per public IP.
+Tor doesn't allow more than two instances per public IP:
+
+`Note: You can only run two Tor relays per public IPv4 address. If you want to run more than two relays you will need more IPv4 addresses.`
+
+[Source](https://trac.torproject.org/projects/tor/wiki/TorRelayGuide)
 
 ***
 
