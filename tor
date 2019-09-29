@@ -248,11 +248,15 @@ statusit () {
 	fi
 	return 0
 }
+
+TORPID_FORMAT="tor.?.pid"
+TORRC_FORMAT="/etc/tor/torrc.?"
+
 setenv() {
     id=$1
     DESC="tor daemon ${id}"
-    TORPID="${TORPIDDIR}/tor.${id}.pid"
-    ARGS="-f /etc/tor/torrc.${id}"
+    TORPID="${TORPIDDIR}/${TORPID_FORMAT/\?/${id}}"
+    ARGS="-f ${TORRC_FORMAT/\?/${id}}"
 }
 
 runcmd() {
@@ -270,7 +274,7 @@ runcmd() {
 runcmds() {
     cmd=$1
     ret=0
-    for c in /etc/tor/torrc.?
+    for c in $TORRC_FORMAT
     do
 	count=${c##*/}
 	count=`echo $count | cut -d '.' -f2`
