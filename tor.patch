@@ -1,5 +1,5 @@
---- /etc/init.d/tor	2019-09-28 19:17:54.324841476 +0200
-+++ /etc/init.d/tor	2019-09-28 18:58:34.299415401 +0200
+--- /etc/init.d/tor	2019-09-28 19:23:34.828841476 +0200
++++ /etc/init.d/tor	2019-09-29 10:53:51.929055092 +0200
 @@ -128,11 +128,10 @@
  }
  
@@ -60,7 +60,7 @@
  	fi
  
  	if start-stop-daemon --stop --signal 1 --quiet --pidfile $TORPID --exec $DAEMON
-@@ -213,36 +214,113 @@
+@@ -213,36 +214,117 @@
  		log_action_end_msg 0
  	elif kill -0 $pid 2>/dev/null; then
  		log_action_end_msg 1 "Is $pid not $NAME?  Is $DAEMON a different binary now?"
@@ -108,11 +108,15 @@
  	fi
 +	return 0
 +}
++
++TORPID_FORMAT="tor.?.pid"
++TORRC_FORMAT="/etc/tor/torrc.?"
++
 +setenv() {
 +    id=$1
 +    DESC="tor daemon ${id}"
-+    TORPID="${TORPIDDIR}/tor.${id}.pid"
-+    ARGS="-f /etc/tor/torrc.${id}"
++    TORPID="${TORPIDDIR}/${TORPID_FORMAT/\?/${id}}"
++    ARGS="-f ${TORRC_FORMAT/\?/${id}}"
 +}
 +
 +runcmd() {
@@ -130,7 +134,7 @@
 +runcmds() {
 +    cmd=$1
 +    ret=0
-+    for c in /etc/tor/torrc.?
++    for c in $TORRC_FORMAT
 +    do
 +	count=${c##*/}
 +	count=`echo $count | cut -d '.' -f2`
@@ -184,7 +188,7 @@
  	;;
    *)
  	log_action_msg "Usage: $0 {start|stop|restart|reload|force-reload|status}" >&2
-@@ -250,4 +328,4 @@
+@@ -250,4 +332,4 @@
  	;;
  esac
  
